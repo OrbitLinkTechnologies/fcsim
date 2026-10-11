@@ -18,3 +18,6 @@ Server Screenshot
 
 Client Screenshot
 ![client screenshot](client_screenshot.png "client screenshot")
+
+Workbench Viewer Screenshot ("/workbench")
+![workbench viewer screenshot](workbench_viewer_screenshot.png "workbench viewer screenshot")
