@@ -1,6 +1,6 @@
 # fcsim
 
-Build Instructions (or use prebuilt JAR)
+Build & Run Instructions (or use prebuilt JAR)
 
 ```
 git clone https://github.com/ghsmith/fcsim
