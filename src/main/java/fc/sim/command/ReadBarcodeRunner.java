@@ -28,6 +28,7 @@ public class ReadBarcodeRunner implements Runnable {
 
         StepStatus stepStatus = new StepStatus();
         robotRunner.stepStatusMap.put(robotRunner.runId + "." + robotRunner.step.stepId, stepStatus);
+        robotRunner.stepStatusList.add(stepStatus);
         stepStatus.runId = robotRunner.runId;
         stepStatus.stepId = robotRunner.step.stepId;
         stepStatus.instruction = robotRunner.step.instruction;

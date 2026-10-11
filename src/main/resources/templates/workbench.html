@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Workbench</title>
+</head>
+<body>
+    <p style="font-weight: bold;">Red Tube Rack</p>
+    <table>
+        <tr th:each="tube, stat : ${workbench.redTubeRack}">
+            <td th:text="${stat.index}">0</td>
+            <td th:text="${tube ?: 'open'}">Tube Name</td>
+        </tr>
+    </table>
+    <p style="font-weight: bold;">Blue Tube Rack</p>
+    <table>
+        <tr th:each="tube, stat : ${workbench.blueTubeRack}">
+            <td th:text="${stat.index}">0</td>
+            <td th:text="${tube ?: 'open'}">Tube Name</td>
+        </tr>
+    </table>
+    <p style="font-weight: bold;">Gripper</p>
+    <p th:text="${workbench.tubeInGripper ?: 'open'}">Tube Name</p>
+    <p style="font-weight: bold;">Step Status</p>
+    <table>
+        <tr>
+            <th>Run ID</th>
+            <th>Step ID</th>
+            <th>Instruction</th>
+            <th>State</th>
+            <th>Started</th>
+            <th>Finished</th>
+            <th>Observations</th>
+            <th>Error</th>
+        </tr>
+        <tr th:each="stepStatus, stat : ${robotRunner.stepStatusList}">
+            <td th:text="${stepStatus.runId}">Run ID</td>
+            <td th:text="${stepStatus.stepId}">Run ID</td>
+            <td th:text="${stepStatus.instruction}">Instruction</td>
+            <td th:text="${stepStatus.state}">State</td>
+            <td th:text="${stepStatus.startedAt}">Started</td>
+            <td th:text="${stepStatus.endedAt}">Finished</td>
+            <td th:text="${stepStatus.observationsJson}">Observations</td>
+            <td th:text="${stepStatus.error}">Error</td>
+        </tr>
+    </table>
+</body>
+</html>

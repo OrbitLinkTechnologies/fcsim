@@ -8,9 +8,7 @@ import fc.sim.data.StepStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -22,6 +20,7 @@ public class RobotRunner implements Runnable {
     public String runId = null;
     public Step step = null;
     public Map<String, StepStatus> stepStatusMap = new HashMap<>();
+    public List<StepStatus> stepStatusList = new ArrayList<>();
 
     private Pattern pickUp = Pattern.compile("Pick up a tube from the (.*) rack.");
     private Pattern putDown = Pattern.compile("Place the tube you are holding in an open spot in the (.*) rack.");
@@ -70,6 +69,7 @@ public class RobotRunner implements Runnable {
                         LOGGER.info("I don't know how to parse instruction: " + step.instruction);
                         StepStatus stepStatus = new StepStatus();
                         stepStatusMap.put(runId + "." + step.stepId, stepStatus);
+                        stepStatusList.add(stepStatus);
                         stepStatus.runId = runId;
                         stepStatus.stepId = step.stepId;
                         stepStatus.instruction = step.instruction;
