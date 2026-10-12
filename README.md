@@ -10,7 +10,7 @@ cd target
 java -jar fcsim-0.0.1-SNAPSHOT.jar --server.port=8080
 ```
 
-Swagger Endpoint Documentation at `swagger_ui.html`
+Swagger Endpoint Documentation at `/swagger_ui.html`
 ![Swagger UI documentation](swagger_docs.png "Swagger UI documentation")
 
 Server Screenshot
@@ -19,5 +19,5 @@ Server Screenshot
 Client Screenshot
 ![client screenshot](client_screenshot.png "client screenshot")
 
-Workbench Viewer Screenshot ("/workbench")
+Workbench Viewer Screenshot at `/workbench`
 ![workbench viewer screenshot](workbench_viewer_screenshot.png "workbench viewer screenshot")
