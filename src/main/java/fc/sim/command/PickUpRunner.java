@@ -15,72 +15,85 @@ public class PickUpRunner implements Runnable {
 
     private RobotRunner robotRunner;
     private String rackColor;
+    private StepStatus stepStatus;
 
     public PickUpRunner(RobotRunner robotRunner, String rackColor) {
         this.robotRunner = robotRunner;
         this.rackColor = rackColor;
+        this.stepStatus = robotRunner.stepStatus;
     }
 
     @Override
     public void run() {
 
-        robotRunner.ready = false;
-
         LOGGER.info("PickUp started: " + rackColor);
 
-        StepStatus stepStatus = new StepStatus();
-        robotRunner.stepStatusMap.put(robotRunner.runId + "." + robotRunner.step.stepId, stepStatus);
-        robotRunner.stepStatusList.add(stepStatus);
-        stepStatus.runId = robotRunner.runId;
-        stepStatus.stepId = robotRunner.step.stepId;
-        stepStatus.instruction = robotRunner.step.instruction;
+        try { Thread.sleep(robotRunner.COMMAND_LATENCY); } catch (InterruptedException e) { LOGGER.info("PickUp cancelled"); return; }
 
-        stepStatus.state = "running";
-        stepStatus.startedAt = new Date();
+        synchronized(robotRunner) {
 
-        try { Thread.sleep(robotRunner.COMMAND_LATENCY); } catch (InterruptedException e) { throw new RuntimeException(e); }
-
-        if(SimApplication.workbench.tubeInGripper != null) {
-
-            LOGGER.info("Gripper occupied: " + SimApplication.workbench.tubeInGripper);
-            stepStatus.state = "failed";
-            stepStatus.endedAt = new Date();
-            stepStatus.error = "gripper occupied";
-
-        }
-        else {
+            if(robotRunner.stepStatus != stepStatus) {
+                return;
+            }
 
             String[] tubeRack = SimApplication.workbench.tubeRackMap.get(rackColor);
-            int index = -1;
-            for (int i = 0; i < tubeRack.length; i++) {
-                if (tubeRack[i] != null) {
-                    index = i;
-                    break;
-                }
-            }
 
-            if (index != -1) {
-                LOGGER.info("PickUp found tube: " + tubeRack[index] + " in position " + index);
-                SimApplication.workbench.tubeInGripper = tubeRack[index];
-                tubeRack[index] = null;
-                stepStatus.state = "complete";
-                stepStatus.endedAt = new Date();
-                StepStatus.RackObservation observation = new StepStatus.RackObservation();
-                stepStatus.observations = new HashMap<>();
-                stepStatus.observations.put("pickup", observation);
-                observation.labware = rackColor;
-                observation.position = String.valueOf(index);
-            } else {
-                LOGGER.info("PickUp did not find a tube");
+            if(SimApplication.workbench.tubeInGripper != null) {
+
+                LOGGER.info("Gripper occupied: " + SimApplication.workbench.tubeInGripper);
                 stepStatus.state = "failed";
                 stepStatus.endedAt = new Date();
-                stepStatus.error = "empty rack";
+                stepStatus.error = new StepStatus.StepError();
+                stepStatus.error.code = "GRIPPER_OCCUPIED";
+                stepStatus.error.message = "gripper occupied";
+
+            }
+            else if(tubeRack == null) {
+
+                LOGGER.info("PickUp did not find a " + rackColor + " rack");
+                stepStatus.state = "failed";
+                stepStatus.endedAt = new Date();
+                stepStatus.error = new StepStatus.StepError();
+                stepStatus.error.code = "UNKNOWN_LABWARE";
+                stepStatus.error.message = "no " + rackColor + " rack";
+
+            }
+            else {
+
+                int index = -1;
+                for (int i = 0; i < tubeRack.length; i++) {
+                    if (tubeRack[i] != null) {
+                        index = i;
+                        break;
+                    }
+                }
+
+                if (index != -1) {
+                    LOGGER.info("PickUp found tube: " + tubeRack[index] + " in position " + index);
+                    SimApplication.workbench.tubeInGripper = tubeRack[index];
+                    tubeRack[index] = null;
+                    stepStatus.state = "completed";
+                    stepStatus.endedAt = new Date();
+                    StepStatus.RackObservation observation = new StepStatus.RackObservation();
+                    stepStatus.observations = new HashMap<>();
+                    stepStatus.observations.put("picked_from", observation);
+                    observation.labware = rackColor + " rack";
+                    observation.position = "A" + (index + 1);
+                    stepStatus.detail = "Picked up " + SimApplication.workbench.tubeInGripper + " from " + observation.labware + " " + observation.position + ".";
+                } else {
+                    LOGGER.info("PickUp did not find a tube");
+                    stepStatus.state = "failed";
+                    stepStatus.endedAt = new Date();
+                    stepStatus.error = new StepStatus.StepError();
+                    stepStatus.error.code = "NO_TUBE_FOUND";
+                    stepStatus.error.message = "empty rack";
+                }
+
             }
 
-        }
+            robotRunner.clearStep();
 
-        robotRunner.step = null;
-        robotRunner.ready = true;
+        }
 
     }
 

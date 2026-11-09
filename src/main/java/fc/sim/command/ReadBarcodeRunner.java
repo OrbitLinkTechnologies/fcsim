@@ -14,52 +14,50 @@ public class ReadBarcodeRunner implements Runnable {
     private final static Logger LOGGER = LoggerFactory.getLogger(ReadBarcodeRunner.class);
 
     private RobotRunner robotRunner;
+    private StepStatus stepStatus;
 
     public ReadBarcodeRunner(RobotRunner robotRunner) {
         this.robotRunner = robotRunner;
+        this.stepStatus = robotRunner.stepStatus;
     }
 
     @Override
     public void run() {
 
-        robotRunner.ready = false;
-
         LOGGER.info("ReadBarCode started");
 
-        StepStatus stepStatus = new StepStatus();
-        robotRunner.stepStatusMap.put(robotRunner.runId + "." + robotRunner.step.stepId, stepStatus);
-        robotRunner.stepStatusList.add(stepStatus);
-        stepStatus.runId = robotRunner.runId;
-        stepStatus.stepId = robotRunner.step.stepId;
-        stepStatus.instruction = robotRunner.step.instruction;
+        try { Thread.sleep(robotRunner.COMMAND_LATENCY); } catch (InterruptedException e) { LOGGER.info("ReadBarCode cancelled"); return; }
 
-        stepStatus.state = "running";
-        stepStatus.startedAt = new Date();
+        synchronized(robotRunner) {
 
-        try { Thread.sleep(robotRunner.COMMAND_LATENCY); } catch (InterruptedException e) { throw new RuntimeException(e); }
+            if(robotRunner.stepStatus != stepStatus) {
+                return;
+            }
 
-        if(SimApplication.workbench.tubeInGripper == null) {
+            if(SimApplication.workbench.tubeInGripper == null) {
 
-            LOGGER.info("Gripper not occupied");
-            stepStatus.state = "failed";
-            stepStatus.endedAt = new Date();
-            stepStatus.error = "gripper not occupied";
+                LOGGER.info("Gripper not occupied");
+                stepStatus.state = "failed";
+                stepStatus.endedAt = new Date();
+                stepStatus.error = new StepStatus.StepError();
+                stepStatus.error.code = "GRIPPER_EMPTY";
+                stepStatus.error.message = "gripper not occupied";
+
+            }
+            else {
+
+                LOGGER.info("ReadBarCode read tube: " + SimApplication.workbench.tubeInGripper);
+                stepStatus.state = "completed";
+                stepStatus.endedAt = new Date();
+                stepStatus.observations = new HashMap<>();
+                stepStatus.observations.put("barcode", SimApplication.workbench.tubeInGripper);
+                stepStatus.detail = "Read barcode " + SimApplication.workbench.tubeInGripper + ".";
+
+            }
+
+            robotRunner.clearStep();
 
         }
-        else {
-
-            LOGGER.info("ReadBarCode read tube: " + SimApplication.workbench.tubeInGripper);
-            stepStatus.state = "complete";
-            stepStatus.endedAt = new Date();
-            StepStatus.BarCodeObservation observation = new StepStatus.BarCodeObservation();
-            stepStatus.observations = new HashMap<>();
-            stepStatus.observations.put("readBarcode", observation);
-            observation.barcode = SimApplication.workbench.tubeInGripper;
-
-        }
-
-        robotRunner.step = null;
-        robotRunner.ready = true;
 
     }
 

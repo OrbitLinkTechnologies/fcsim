@@ -8,14 +8,14 @@
     <p style="font-weight: bold;">Red Tube Rack</p>
     <table>
         <tr th:each="tube, stat : ${workbench.redTubeRack}">
-            <td th:text="${stat.index}">0</td>
+            <td th:text="'A' + ${stat.count}">A1</td>
             <td th:text="${tube ?: 'open'}">Tube Name</td>
         </tr>
     </table>
     <p style="font-weight: bold;">Blue Tube Rack</p>
     <table>
         <tr th:each="tube, stat : ${workbench.blueTubeRack}">
-            <td th:text="${stat.index}">0</td>
+            <td th:text="'A' + ${stat.count}">A1</td>
             <td th:text="${tube ?: 'open'}">Tube Name</td>
         </tr>
     </table>
@@ -41,7 +41,7 @@
             <td th:text="${stepStatus.startedAt}">Started</td>
             <td th:text="${stepStatus.endedAt}">Finished</td>
             <td th:text="${stepStatus.observationsJson}">Observations</td>
-            <td th:text="${stepStatus.error}">Error</td>
+            <td th:text="${stepStatus.error?.code}">Error</td>
         </tr>
     </table>
 </body>
